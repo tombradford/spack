@@ -117,8 +117,8 @@ error(0, "Cannot find a valid provider for virtual {0}", Virtual, startcauses, C
 % At most one variant value for single-valued variants
 error(0, "'{0}' required multiple values for single-valued variant '{1}'\n    Requested 'Spec({1}={2})' and 'Spec({1}={3})'", Package, Variant, Value1, Value2, startcauses, Cause1, X, Cause2, X)
   :- attr("node", node(X, Package)),
-     node_has_variant(node(X, Package), Variant),
-     pkg_fact(Package, variant_single_value(Variant)),
+     node_has_variant(node(X, Package), Variant, VariantID),
+     pkg_fact(Package, variant_single_value(VariantID)),
      build(node(X, Package)),
      attr("variant_value", node(X, Package), Variant, Value1),
      imposed_constraint(EID1, "variant_set", Package, Variant, Value1),
@@ -165,11 +165,10 @@ error(0, "Attempted to build package {0} which is not buildable and does not hav
 
 error(0, "Attempted to build package {0} which is not buildable and does not have a satisfying external\n        'Spec({0} {1}={2})' is an external constraint for {0} which was not satisfied\n        'Spec({0} {1}={3})' required", Package, Variant, Value, OtherValue, startcauses, OtherValueCause, CID)
   :- external(node(ID, Package)),
-     not attr("external_conditions_hold", node(ID, Package), _),
      imposed_constraint(EID, "external_conditions_hold", Package, _),
      trigger_and_effect(Package, TID, EID),
      condition_requirement(TID, "variant_value", Package, Variant, Value),
-     not attr("variant_value", node(ID, Package), Variant, Value),
+     attr("variant_value", node(ID, Package), Variant, Value),
      attr("variant_value", node(ID, Package), Variant, OtherValue),
      imposed_constraint(EID2, "variant_set", Package, Variant, OtherValue),
      pkg_fact(TriggerPkg, condition_effect(OtherValueCause, EID2)),
@@ -216,6 +215,11 @@ error(0, Msg, startcauses, TriggerID, ID1, ConstraintID, ID2)
 #defined error/4.
 #defined error/5.
 #defined error/6.
+#defined error/7.
+#defined error/8.
+#defined error/9.
+#defined error/10.
+#defined error/11.
 #defined attr/2.
 #defined attr/3.
 #defined attr/4.
@@ -225,6 +229,7 @@ error(0, Msg, startcauses, TriggerID, ID1, ConstraintID, ID2)
 #defined imposed_constraint/4.
 #defined imposed_constraint/5.
 #defined imposed_constraint/6.
+#defined condition_cause/4.
 #defined condition_requirement/3.
 #defined condition_requirement/4.
 #defined condition_requirement/5.
@@ -234,6 +239,6 @@ error(0, Msg, startcauses, TriggerID, ID1, ConstraintID, ID2)
 #defined external/1.
 #defined trigger_and_effect/3.
 #defined build/1.
-#defined node_has_variant/2.
+#defined node_has_variant/3.
 #defined provider/2.
 #defined external_version/3.
