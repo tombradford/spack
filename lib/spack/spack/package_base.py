@@ -617,10 +617,6 @@ class PackageBase(WindowsRPath, PackageViewMixin, RedistributionMixin, metaclass
     #: By default do not run tests within package's install()
     run_tests = False
 
-    #: Keep -Werror flags, matches config:flags:keep_werror to override config
-    # NOTE: should be type Optional[Literal['all', 'specific', 'none']] in 3.8+
-    keep_werror: Optional[str] = None
-
     #: Most packages are NOT extendable. Set to True if you want extensions.
     extendable = False
 
@@ -925,6 +921,22 @@ class PackageBase(WindowsRPath, PackageViewMixin, RedistributionMixin, metaclass
         return os.path.join(
             self.global_license_dir, self.name, os.path.basename(self.license_files[0])
         )
+
+    # NOTE: return type should be Optional[Literal['all', 'specific', 'none']] in
+    # Python 3.8+, but we still support 3.6.
+    @property
+    def keep_werror(self) -> Optional[str]:
+        """Keep -Werror flags, matches config:flags:keep_werror to override config
+
+        Valid return values are 'all', 'specific', 'none', and ``None``. ``None`` means
+        we'll respect the user's configuration.
+        """
+        # nvhpc and PGI do not have the -Wno-error flag that replace -Werror with,
+        # so currently we can't support this feature.
+        if self.spec.satisfies("%nvhpc") or self.spec.satisfies("%pgi"):
+            return "all"
+        else:
+            return None
 
     @property
     def version(self):
